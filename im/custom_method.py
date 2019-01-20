@@ -16,7 +16,6 @@ def make_multiple_issues(docname):
 			issue.subject = row.subject
 			issue.raised_by = cur_issue.raised_by
 			issue.email_account = cur_issue.email_account
-			issue.priority = cur_issue.priority
 			issue.issue_type = cur_issue.issue_type
 			issue.issue_reference = cur_issue.name
 			issue.insert(ignore_permissions=True)
