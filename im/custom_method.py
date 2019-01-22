@@ -31,6 +31,28 @@ def make_multiple_issues(docname):
 		frappe.throw(_("Multiple Issues cannot be created for Issues in Closed or Hold status"))
 
 	if cur_issue.raised_by and issue_inserted:
-		sender_email = frappe.db.get_value("Email Account",cur_issue.email_account, "email_id"):
+		sender_email = frappe.db.get_value("Email Account",cur_issue.email_account, "email_id")
 		msg = """ Hi, <br><br> Issue - %s has been closed and multiple issues have been raised as per resolution: %s"""%(cur_issue.name, cur_issue.resolution_details)
 		frappe.sendmail(sender = sender_email, recipients = [cur_issue.raised_by], subject = "Issue Close -'%s'"%(cur_issue.name), content = msg)
+
+@frappe.whitelist()
+def cc_list(docname):
+	email_ids = frappe.db.sql('''select 
+								a.cc
+						from 
+							`tabCommunication` a
+						where
+							a.reference_doctype = 'Issue'
+							and a.reference_name = %s
+							and a.creation = (select 
+													max(b.creation)
+												from 
+													`tabCommunication` b
+												where 
+													a.reference_doctype = b.reference_doctype
+													and a.reference_name = b.reference_name)
+							and a.cc is NOT NULL''', docname, as_dict=1)
+
+	for cc in email_ids:
+		if cc['cc']:
+			return cc['cc']
