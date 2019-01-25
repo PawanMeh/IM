@@ -78,7 +78,11 @@ app_license = "MIT"
 # Document Events
 # ---------------
 # Hook on document methods and events
-
+doc_events = {
+	"Issue":{
+		"validate": "im.custom_method.share_issue"
+	}
+}
 # doc_events = {
 # 	"*": {
 # 		"on_update": "method",

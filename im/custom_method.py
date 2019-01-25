@@ -56,3 +56,7 @@ def cc_list(docname):
 	for cc in email_ids:
 		if cc['cc']:
 			return cc['cc']
+
+def share_issue(self, method):
+	if self.user_assigned:
+		frappe.share.add(self.doctype, self.name, user = self.user_assigned, read = 1, write = 1, share = 1)
