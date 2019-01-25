@@ -33,7 +33,7 @@ def make_multiple_issues(docname):
 	if cur_issue.raised_by and issue_inserted:
 		sender_email = frappe.db.get_value("Email Account",cur_issue.email_account, "email_id")
 		msg = """ Hi, <br><br> Issue - %s has been closed and multiple issues have been raised as per resolution: %s"""%(cur_issue.name, cur_issue.resolution_details)
-		frappe.sendmail(sender = sender_email, recipients = [cur_issue.raised_by], subject = "Issue Close -'%s'"%(cur_issue.name), content = msg)
+		frappe.sendmail(sender = sender_email, recipients = [cur_issue.raised_by], subject = "Issue Closed -'%s'"%(cur_issue.name), content = msg)
 
 @frappe.whitelist()
 def cc_list(docname):
@@ -58,5 +58,11 @@ def cc_list(docname):
 			return cc['cc']
 
 def share_issue(self, method):
-	if self.user_assigned:
-		frappe.share.add(self.doctype, self.name, user = self.user_assigned, read = 1, write = 1, share = 1)
+	old_user = frappe.db.get_value("Issue", filters={"name": self.name}, fieldname="user_assigned")
+	if old_user:
+		if self.user_assigned == old_user['user_assigned']:
+			pass
+		else:
+			frappe.share.add(self.doctype, self.name, user = self.user_assigned, read = 1, write = 1, share = 1, notify = 1)
+	else:
+		frappe.share.add(self.doctype, self.name, user = self.user_assigned, read = 1, write = 1, share = 1, notify = 1)
