@@ -59,7 +59,8 @@ def cc_list(docname):
 
 def share_issue(self, method):
 	old_user = frappe.db.get_value("Issue", filters={"name": self.name}, fieldname="user_assigned")
-	if old_user:
+	issue_name = frappe.db.get_value("Issue", filters={"name": self.name}, fieldname="name")
+	if old_user and issue_name:
 		if self.user_assigned == old_user:
 			pass
 		else:
