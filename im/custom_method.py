@@ -66,3 +66,5 @@ def share_issue(self, method):
 		else:
 			if self.user_assigned:
 				frappe.share.add(self.doctype, self.name, user = self.user_assigned, read = 1, write = 1, share = 1, notify = 1)
+	if not old_user and self.assigned:
+		frappe.share.add(self.doctype, self.name, user = self.user_assigned, read = 1, write = 1, share = 1, notify = 1)
