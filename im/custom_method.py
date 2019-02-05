@@ -96,12 +96,12 @@ def share_issue(self, method):
 			split_issue = True
 			break
 
-	if self.status = "Closed":
+	if self.status == "Closed":
 		if issue_status == "Closed" or split_issue:
 			pass
 		else:
 			sender_email = frappe.db.get_value("Email Account",self.email_account, "email_id")
 			msg = """ Hi, <br><br> %s - Ticket No - %s has been closed. <br><br>In case you do not agree with the closure kindly send a fresh email with reasons for your disagreement.
-					<br><br>Kindly mention the following as your subject line. <br><br><b> %s - Ticket No - %s Closure is Dsiagreed <b>"""%(self.name, self.subject, self.name, self.subject)
+					<br><br>Kindly mention the following as your subject line. <br><br><b> %s - Ticket No - %s Closure is Disagreed <b>"""%(self.name, self.subject, self.name, self.subject)
 			frappe.sendmail(sender = sender_email, recipients = [self.raised_by], subject = "Ticket No -'%s' is Closed"%(self.name), content = msg)
 		
