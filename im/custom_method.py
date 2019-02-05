@@ -32,8 +32,8 @@ def make_multiple_issues(docname):
 
 	if cur_issue.raised_by and issue_inserted:
 		sender_email = frappe.db.get_value("Email Account",cur_issue.email_account, "email_id")
-		msg = """ Hi, <br><br> Issue - %s has been closed and multiple issues have been raised as per resolution: %s"""%(cur_issue.name, cur_issue.resolution_details)
-		frappe.sendmail(sender = sender_email, recipients = [cur_issue.raised_by], subject = "Issue Closed -'%s'"%(cur_issue.name), content = msg)
+		msg = """ Hi, <br><br> Issue - %s has been split and multiple issues have been raised as per resolution: %s"""%(cur_issue.name, cur_issue.resolution_details)
+		frappe.sendmail(sender = sender_email, recipients = [cur_issue.raised_by], subject = "Issue Split -'%s'"%(cur_issue.name), content = msg)
 
 @frappe.whitelist()
 def cc_list(docname):
@@ -53,6 +53,26 @@ def cc_list(docname):
 													and a.reference_name = b.reference_name)
 							and a.cc is NOT NULL''', docname, as_dict=1)
 
+	if email_ids:
+		pass
+	else:
+		email_ids = frappe.db.sql('''select 
+									a.cc
+							from 
+								`tabCommunication` a, `tabIssue` b
+							where
+								a.reference_doctype = 'Issue'
+								and a.reference_name = b.issue_reference
+								and b.name = %s
+								and a.creation = (select
+														max(b.creation)
+													from
+														`tabCommunication` b
+													where
+														a.reference_doctype = b.reference_doctype
+														and a.reference_name = b.reference_name)
+								and a.cc is NOT NULL''', docname, as_dict=1)
+
 	for cc in email_ids:
 		if cc['cc']:
 			return cc['cc']
@@ -66,5 +86,15 @@ def share_issue(self, method):
 		else:
 			if self.user_assigned:
 				frappe.share.add(self.doctype, self.name, user = self.user_assigned, read = 1, write = 1, share = 1, notify = 1)
-	if not old_user and self.assigned:
+	if not old_user and self.user_assigned:
 		frappe.share.add(self.doctype, self.name, user = self.user_assigned, read = 1, write = 1, share = 1, notify = 1)
+
+	issue_status = frappe.db.get_value("Issue", filters={"name": self.name}, fieldname="status")
+	if self.status = "Closed":
+		if issue_status == "Closed":
+			pass
+		else:
+			sender_email = frappe.db.get_value("Email Account",self.email_account, "email_id")
+			msg = """ Hi, <br><br> Issue - %s has been closed"""%(self.name)
+			frappe.sendmail(sender = sender_email, recipients = [self.raised_by], subject = "Issue -'%s' has been closed. <br> Please do not reply to this email. In case you are not satisfied with the resolution, please raise a new issue"%(self.name), content = msg)
+		
