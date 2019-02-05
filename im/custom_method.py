@@ -19,7 +19,7 @@ def make_multiple_issues(docname):
 			issue.issue_type = cur_issue.issue_type
 			issue.issue_reference = cur_issue.name
 			issue.insert(ignore_permissions=True)
-			con_name = row.subject + "-" + issue.name + " / "
+			con_name = row.subject + "-" + issue.name + " / " + con_name
 			issue_inserted = True
 		if issue_inserted:
 			cur_issue.resolution_details = con_name
@@ -90,8 +90,14 @@ def share_issue(self, method):
 		frappe.share.add(self.doctype, self.name, user = self.user_assigned, read = 1, write = 1, share = 1, notify = 1)
 
 	issue_status = frappe.db.get_value("Issue", filters={"name": self.name}, fieldname="status")
+	split_issue = False
+	for row in self.get("issue_split"):
+		if row.subject:
+			split_issue = True
+			break
+
 	if self.status = "Closed":
-		if issue_status == "Closed":
+		if issue_status == "Closed" or split_issue:
 			pass
 		else:
 			sender_email = frappe.db.get_value("Email Account",self.email_account, "email_id")
