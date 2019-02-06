@@ -32,8 +32,8 @@ def make_multiple_issues(docname):
 
 	if cur_issue.raised_by and issue_inserted:
 		sender_email = frappe.db.get_value("Email Account",cur_issue.email_account, "email_id")
-		msg = """ Hi, <br><br> Ticket No - %s has been split and replaced with the following new ticket numbers <br><br> %s"""%(cur_issue.name, con_name)
-		frappe.sendmail(sender = sender_email, recipients = [cur_issue.raised_by], subject = "Ticket No -'%s' is split and replaced"%(cur_issue.name), content = msg)
+		msg = """ Hi, <br><br>%s - Ticket No - %s has been split and replaced with the following new ticket numbers <br><br> %s"""%(cur_issue.subject, cur_issue.name, con_name)
+		frappe.sendmail(sender = sender_email, recipients = [cur_issue.raised_by], subject = "%s - Ticket No - %s is split and replaced"%(cur_issue.subject, cur_issue.name), content = msg)
 
 @frappe.whitelist()
 def cc_list(docname):
@@ -102,6 +102,5 @@ def share_issue(self, method):
 		else:
 			sender_email = frappe.db.get_value("Email Account",self.email_account, "email_id")
 			msg = """ Hi, <br><br> %s - Ticket No - %s has been closed. <br><br>In case you do not agree with the closure kindly send a fresh email with reasons for your disagreement.
-					<br><br>Kindly mention the following as your subject line. <br><br><b> %s - Ticket No - %s Closure is Disagreed <b>"""%(self.name, self.subject, self.name, self.subject)
-			frappe.sendmail(sender = sender_email, recipients = [self.raised_by], subject = "Ticket No -'%s' is Closed"%(self.name), content = msg)
-		
+					<br><br>Kindly mention the following as your subject line. <br><br><b> %s - Ticket No - %s Closure is Disagreed <b>"""%(self.subject, self.name, self.subject, self.name)
+			frappe.sendmail(sender = sender_email, recipients = [self.raised_by], subject = "%s - Ticket No - %s is Closed"%(self.subject,self.name), content = msg)
