@@ -96,7 +96,8 @@ def share_issue(self, method):
 			split_issue = True
 			break
 
-	if self.status == "Closed":
+
+	if self.status == "Closed" and not self.ignore_closure_email:
 		if issue_status == "Closed" or split_issue:
 			pass
 		else:
