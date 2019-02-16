@@ -111,6 +111,14 @@ doc_events = {
 # 		"im.tasks.monthly"
 # 	]
 # }
+scheduler_events = {
+	"hourly": [
+		"im.custom_method.update_issue_sent_to"
+	],
+	"daily":[
+		"im.custom_method.send_reminder_email"
+	]
+}
 
 # Testing
 # -------

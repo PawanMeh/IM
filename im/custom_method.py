@@ -102,6 +102,58 @@ def share_issue(self, method):
 			pass
 		else:
 			sender_email = frappe.db.get_value("Email Account",self.email_account, "email_id")
-			msg = """ Hi, <br><br> %s - Ticket No - %s has been closed. <br><br>In case you do not agree with the closure kindly send a fresh email with reasons for your disagreement.
-					<br><br>Kindly mention the following as your subject line. <br><br><b> %s - Ticket No - %s Closure is Disagreed <b>"""%(self.subject, self.name, self.subject, self.name)
+			msg = """ Hi, <br><br> %s - Ticket No - %s has been closed. <br><br> Resolution details - %s <br><br>In case you do not agree with the closure kindly send a fresh email with reasons for your disagreement.
+					<br><br>Kindly mention the following as your subject line. <br><br><b> %s - Ticket No - %s Closure is Disagreed <b>"""%(self.subject, self.name, self.resolution_details, self.subject, self.name)
 			frappe.sendmail(sender = sender_email, recipients = [self.raised_by], subject = "%s - Ticket No - %s is Closed"%(self.subject,self.name), content = msg)
+
+def update_issue_sent_to():
+	frappe.db.sql("""update `tabIssue` c
+							set c.issue_sent_to = (select 
+													IFNULL(recipients, ' ') 
+												from 
+													`tabCommunication` a
+												where
+													a.reference_doctype = 'Issue'
+													and a.reference_name = c.name
+													and a.creation = (select 
+																			min(b.creation)
+																		from 
+																			`tabCommunication` b
+																		where 
+																			a.reference_doctype = b.reference_doctype
+																			and a.reference_name = b.reference_name)
+													and a.recipients is NOT NULL
+													and c.issue_sent_to IS NULL)
+							where c.issue_sent_to IS NULL
+							and exists (select 'X'
+										from `tabCommunication` a
+										where
+											a.reference_doctype = 'Issue'
+											and a.reference_name = c.name
+											and a.creation = (select 
+																	min(b.creation)
+																from 
+																	`tabCommunication` b
+																where 
+																	a.reference_doctype = b.reference_doctype
+																	and a.reference_name = b.reference_name)
+										and a.recipients is NOT NULL)
+							""")
+
+def send_reminder_email():
+	email_ids = frappe.db.sql('''select 
+								a.issue_sent_to as issue_sent, GROUP_CONCAT(CONCAT(a.name, "-", a.subject)) as issue
+						from 
+							`tabIssue` a
+						where
+							a.issue_sent_to IS NOT NULL
+							and a.due_date IS NOT NULL
+							and a.due_date < CURDATE()
+							and a.status not in ('Closed')
+							and a.ignore_closure_email = 1
+						group by a.issue_sent_to''', as_dict=1)
+
+	for email_id in email_ids:
+		msg = """ Hi, <br><br> Gentle Reminder <br><br> Your action is needed to close out the following issues <br><br>%s
+				<br><br>Kindly contact our support team if you need any assistance. <br><br> Thanks & Regards <br><br> Team MVA"""%(email_id['issue']))
+		frappe.sendmail(sender = sender_email, recipients = email_id['issue_sent'], subject = "MVA Reminder - Your action is needed to close out certain issues", content = msg)
