@@ -153,7 +153,9 @@ def send_reminder_email():
 							and a.ignore_closure_email = 1
 						group by a.issue_sent_to''', as_dict=1)
 
+	sender_email = frappe.db.get_value("Email Account",'Notifications', "email_id")
+
 	for email_id in email_ids:
 		msg = """ Hi, <br><br> Gentle Reminder <br><br> Your action is needed to close out the following issues <br><br>%s
-				<br><br>Kindly contact our support team if you need any assistance. <br><br> Thanks & Regards <br><br> Team MVA"""%(email_id['issue']))
+				<br><br>Kindly contact our support team if you need any assistance. <br><br> Thanks & Regards <br><br> Team MVA"""%(email_id['issue'])
 		frappe.sendmail(sender = sender_email, recipients = email_id['issue_sent'], subject = "MVA Reminder - Your action is needed to close out certain issues", content = msg)
