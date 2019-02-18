@@ -142,7 +142,7 @@ def update_issue_sent_to():
 
 def send_reminder_email():
 	email_ids = frappe.db.sql('''select 
-								a.issue_sent_to as issue_sent, GROUP_CONCAT(CONCAT(a.name, "-", a.subject)) as issue
+								a.issue_sent_to as issue_sent, GROUP_CONCAT(CONCAT(a.name, "-", a.subject) SEPARATOR ' / ') as issue
 						from 
 							`tabIssue` a
 						where
